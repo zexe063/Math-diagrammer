@@ -1,0 +1,135 @@
+import {
+  barChart,
+  boxPlot,
+  cellGrid,
+  column,
+  coordinatePlane,
+  fractionBar,
+  functionPlot,
+  histogram,
+  numberLine,
+  pieChart,
+  plot,
+  polygonDiagram,
+  probabilityTree,
+  pythagoras,
+  radialPolygon,
+  renderSVG,
+  row,
+  scatterPlot,
+  sierpinski,
+  spiral,
+  spikeSeries,
+  text,
+  triangleDiagram,
+  vennDiagram,
+} from "../src/index.js";
+
+export const gallery = {
+  numberLine: numberLine(-5, 5, { step: 1 }),
+  fractions: fractionBar(7, 12),
+  coordinatePlane: coordinatePlane({ xDomain: [-5, 5], yDomain: [-4, 4] }),
+  parabola: functionPlot((x) => x * x - 2, {
+    xDomain: [-3, 3],
+    yDomain: [-3, 8],
+  }),
+  histogram: histogram([1, 1.4, 1.7, 2, 2.1, 2.4, 3, 3.2, 3.8, 4.5], { bins: 5 }),
+  barChart: barChart([
+    { label: "Algebra", value: 72 },
+    { label: "Geometry", value: 88 },
+    { label: "Calculus", value: 64 },
+  ]),
+  scatterPlot: scatterPlot([[1, 1], [2, 1.8], [3, 3.4], [4, 3.7], [5, 5.2]]),
+  boxPlot: boxPlot([2, 3, 3, 4, 7, 8, 9, 12]),
+  pieChart: pieChart([
+    { label: "A", value: 20 },
+    { label: "B", value: 35 },
+    { label: "C", value: 45 },
+  ]),
+  venn: vennDiagram(["A", "B", "C"]),
+  probabilityTree: probabilityTree({
+    label: "Coin",
+    children: [
+      { label: "Heads", probability: "1/2" },
+      { label: "Tails", probability: "1/2" },
+    ],
+  }),
+  cellGrid: cellGrid({
+    rows: 4,
+    columns: 6,
+    cellSize: 28,
+    shadedCells: 11,
+    highlightFill: "#a97aee",
+  }),
+  pythagoras: pythagoras(3, 4),
+  spiral: spiral({ turns: 5, endRadius: 120 }),
+  sierpinski: sierpinski(4, { size: 320 }),
+  semanticTriangle: triangleDiagram({
+    layout: "right",
+    width: 260,
+    height: 180,
+    vertexLabels: ["A", "B", "C"],
+    sideLabels: ["c", "a", "b"],
+    angleLabels: { B: "x" },
+    extensions: [{ side: "AB", after: 55, afterLabel: "D" }],
+    fill: "#eef2ff",
+    stroke: "#312e81",
+  }),
+  semanticPolygon: polygonDiagram(5, {
+    radius: 105,
+    vertexLabels: true,
+    sideLabels: ["a", "b", "c", "d", "e"],
+    sideMarks: { AB: 1, BC: 1 },
+    parallelMarks: { CD: 1, EA: 1 },
+    angleLabels: { A: "x" },
+    fill: "#ecfdf5",
+    stroke: "#065f46",
+  }),
+  semanticPlot: plot(
+    spikeSeries([
+      [0, 2.5, 0.24],
+      [1, 3.5, 0.18],
+      [2, 8.5, 0.17],
+      [3, 1.5, 0.2],
+      [4, 2.5, 0.18],
+      [5, 3.5, 0.19],
+      [6, 8.5, 0.17],
+    ], {
+      baseline: 0.5,
+      domain: [0, 6.55],
+      color: "#168c82",
+    }),
+    {
+      title: '"leap year" searches',
+      x: { domain: [0, 10], step: 1, label: "Year" },
+      y: { domain: [0, 10], step: 1, label: "Searches", unit: "millions" },
+      width: 420,
+      height: 250,
+    },
+  ),
+  radialPartition: radialPolygon(12, {
+    radius: 96,
+    palette: ["#1598d5", "#ffad2f"],
+    stroke: "#172033",
+    strokeWidth: 2.5,
+  }),
+};
+
+export const gallerySheet = column(48, [
+  text("Math Diagrammer acceptance gallery", 30).fontWeight(700),
+  row(36, [gallery.numberLine, gallery.fractions, gallery.cellGrid]),
+  row(36, [gallery.pythagoras, gallery.spiral, gallery.sierpinski]),
+  row(36, [gallery.semanticTriangle, gallery.semanticPolygon]),
+  gallery.semanticPlot,
+  row(36, [gallery.radialPartition, radialPolygon({
+    spikes: 6,
+    radius: 96,
+    innerRadius: 52,
+    palette: ["#7c3aed", "#fbbf24"],
+    stroke: "#172033",
+  })]),
+]);
+
+export function gallerySVG(options = {}) {
+  return renderSVG(gallerySheet, { padding: 40, background: "#ffffff", ...options });
+}

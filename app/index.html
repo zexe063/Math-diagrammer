@@ -1,0 +1,190 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Math Diagrammer — compose precise static mathematical diagrams with a small JavaScript API."
+    />
+    <title>Math Diagrammer Studio</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <header class="topbar">
+        <a class="brand" href="./" aria-label="Math Diagrammer home">
+          <svg class="brand-mark" viewBox="0 0 40 40" aria-hidden="true">
+            <path d="M6 29 15.5 10 23 25l4.2-8L34 29" />
+            <circle cx="15.5" cy="10" r="2.6" />
+            <circle cx="23" cy="25" r="2.6" />
+          </svg>
+          <span>
+            <strong>Math Diagrammer</strong>
+            <small>Studio</small>
+          </span>
+        </a>
+
+        <div class="project-controls">
+          <label class="select-wrap" for="example-select">
+            <span class="sr-only">Choose an example</span>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3.5 5.5h13v10h-13zM6 3.5h8" /></svg>
+            <select id="example-select" title="Example programs"></select>
+          </label>
+          <button id="reset-button" class="button button-subtle" type="button" title="Reset this example">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 7a6 6 0 1 1-.1 5M4 7V3m0 4h4" /></svg>
+            Reset
+          </button>
+        </div>
+
+        <div class="run-controls">
+          <span id="engine-badge" class="status-badge is-loading">
+            <i></i><span>Starting engine</span>
+          </span>
+          <button id="export-button" class="button button-subtle" type="button" title="Export SVG" disabled>
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M10 3v9m0 0 3-3m-3 3L7 9M4 14v2h12v-2" /></svg>
+            Export SVG
+          </button>
+          <button id="run-button" class="button button-primary" type="button">
+            <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 5 7 5-7 5z" /></svg>
+            Run
+            <kbd>Ctrl ↵</kbd>
+          </button>
+        </div>
+      </header>
+
+      <main class="workspace" id="workspace">
+        <section class="pane editor-pane" aria-label="Diagram source editor">
+          <div class="pane-header">
+            <div class="pane-title">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m7 5-5 5 5 5m6-10 5 5-5 5m-2-12L9 17" /></svg>
+              <span>Source</span>
+              <span class="file-name">diagram.js</span>
+            </div>
+            <div class="pane-actions">
+              <label class="editor-theme-picker" for="editor-theme-select">
+                <span class="sr-only">Editor theme</span>
+                <select id="editor-theme-select" title="Editor theme" aria-label="Editor theme">
+                  <option value="black">Black</option>
+                  <option value="github-dark">GitHub Dark</option>
+                  <option value="solarized-light">Solarized Light</option>
+                </select>
+              </label>
+              <span id="editor-mode" class="quiet-label">Textarea</span>
+              <button id="copy-code-button" class="icon-button" type="button" title="Copy source">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M7 6V3h9v10h-3M4 7h9v10H4z" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <div class="editor-region" id="editor-region">
+            <textarea
+              id="source-editor"
+              aria-label="JavaScript diagram source"
+              autocomplete="off"
+              autocapitalize="off"
+              spellcheck="false"
+            ></textarea>
+            <div id="monaco-editor" aria-hidden="true"></div>
+          </div>
+
+          <section class="console-panel" id="console-panel" aria-label="Output and diagnostics">
+            <div class="console-header">
+              <div class="console-tabs" role="tablist">
+                <button class="console-tab is-active" data-tab="console" role="tab" aria-selected="true">
+                  Console <span id="log-count" class="count-badge">0</span>
+                </button>
+                <button class="console-tab" data-tab="problems" role="tab" aria-selected="false">
+                  Problems <span id="problem-count" class="count-badge">0</span>
+                </button>
+              </div>
+              <div class="console-actions">
+                <button id="clear-console-button" class="text-button" type="button">Clear</button>
+                <button id="collapse-console-button" class="icon-button compact" type="button" title="Collapse output">
+                  <svg viewBox="0 0 20 20" aria-hidden="true"><path d="m5 12 5-5 5 5" /></svg>
+                </button>
+              </div>
+            </div>
+            <div id="console-output" class="console-output" role="tabpanel"></div>
+            <div id="problems-output" class="console-output" role="tabpanel" hidden></div>
+          </section>
+
+          <footer class="editor-statusbar">
+            <span id="cursor-position">Ln 1, Col 1</span>
+            <span>JavaScript DSL</span>
+            <span id="save-state">Saved locally</span>
+          </footer>
+        </section>
+
+        <div
+          id="pane-resizer"
+          class="pane-resizer"
+          role="separator"
+          aria-orientation="vertical"
+          aria-label="Resize source and preview panes"
+          tabindex="0"
+        ></div>
+
+        <section class="pane preview-pane" aria-label="SVG diagram preview">
+          <div class="pane-header">
+            <div class="pane-title">
+              <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 4h14v12H3zM6 13l3-4 2.2 2.5L13 9l4 5" /><circle cx="7" cy="7" r="1" /></svg>
+              <span>Preview</span>
+              <span id="render-time" class="file-name">Waiting to render</span>
+            </div>
+            <div class="pane-actions preview-actions">
+              <button id="grid-button" class="icon-button" type="button" title="Toggle grid" aria-pressed="false">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M3 3h14v14H3zm4 0v14m6-14v14M3 7h14M3 13h14" /></svg>
+              </button>
+              <span class="toolbar-separator"></span>
+              <button id="zoom-out-button" class="icon-button" type="button" title="Zoom out">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12" /></svg>
+              </button>
+              <button id="zoom-label" class="zoom-label" type="button" title="Reset to 100%">100%</button>
+              <button id="zoom-in-button" class="icon-button" type="button" title="Zoom in">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M4 10h12M10 4v12" /></svg>
+              </button>
+              <button id="fit-button" class="icon-button" type="button" title="Fit diagram to preview">
+                <svg viewBox="0 0 20 20" aria-hidden="true"><path d="M8 3H3v5m9-5h5v5M8 17H3v-5m9 5h5v-5" /></svg>
+              </button>
+            </div>
+          </div>
+
+          <div id="preview-canvas" class="preview-canvas">
+            <div id="preview-empty" class="preview-empty">
+              <div class="empty-orbit">
+                <span></span><span></span><span></span>
+                <svg viewBox="0 0 64 64" aria-hidden="true">
+                  <path d="M11 46 27 14l12 26 7-14 8 20" />
+                </svg>
+              </div>
+              <h2>Your diagram will appear here</h2>
+              <p>Write a composition and call <code>draw(diagram)</code>.</p>
+              <button id="empty-run-button" class="button button-primary" type="button">Run example</button>
+            </div>
+            <div id="diagram-layer" class="diagram-layer" aria-live="polite"></div>
+            <div id="render-overlay" class="render-overlay" hidden aria-live="polite">
+              <span class="spinner"></span>
+              <span>Composing diagram…</span>
+            </div>
+          </div>
+
+          <footer class="preview-statusbar">
+            <span id="diagram-size">No diagram</span>
+            <span class="preview-hint">Wheel to zoom · Drag to pan · Double-click to fit</span>
+          </footer>
+        </section>
+      </main>
+    </div>
+
+    <div id="toast-region" class="toast-region" aria-live="polite" aria-atomic="true"></div>
+
+    <script type="module" src="./main.js"></script>
+  </body>
+</html>
